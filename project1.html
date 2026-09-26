@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriHub | Next-Gen Master Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            --primary: #6366f1;
+            --accent: #00f2fe;
+            --bg: #030712;
+            --glass: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --neon-glow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(34, 211, 238, 0.15) 0, transparent 50%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(0,242,254,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .container { max-width: 1200px; margin: auto; padding: 30px; }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .login-view { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+        .login-card {
+            width: 100%; max-width: 420px; text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 20px; }
+       
+        input, select {
+            width: 100%; padding: 15px; margin: 12px 0; border-radius: 16px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            color: white; outline: none; transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: var(--neon-glow); }
+
+        .btn {
+            padding: 14px 24px; border-radius: 16px; border: none; cursor: pointer;
+            font-weight: 700; transition: 0.4s; display: inline-flex; align-items: center;
+            gap: 10px; justify-content: center; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 13px;
+        }
+
+        .btn-p { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; }
+        .btn-p:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+            padding: 25px; border-radius: 24px; transition: 0.4s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 242, 254, 0.1);
+        }
+
+        .btn-yt { background: #ef4444; color: white; }
+        .btn-pdf { background: #3b82f6; color: white; }
+        .btn-quiz { background: #10b981; color: white; width: 100%; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(10px); z-index: 2000; display: none;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .view { display: none; }
+        .active { display: block; animation: fadeIn 0.6s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-table { width: 100%; color: white; border-collapse: collapse; background: transparent; }
+        .report-table th { background: rgba(99, 102, 241, 0.2); padding: 15px; text-align: left; }
+        .report-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="login-view" class="view active">
+            <div class="login-view">
+                <div class="glass-panel login-card">
+                    <h1>Tri<span style="color:var(--accent)">Hub</span></h1>
+                    <p style="opacity: 0.6; margin-bottom: 20px;">Master Control Portal</p>
+                    <select id="userRole">
+                        <option value="student">Student Account</option>
+                        <option value="teacher">Administrator</option>
+                    </select>
+                    <input type="text" id="userName" placeholder="Full Name">
+                    <button class="btn btn-p" style="width: 100%;" onclick="handleLogin()">
+                        Access Portal <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-view" class="view">
+            <header class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                <div>
+                    <h2 id="greetMsg">Welcome Back!</h2>
+                    <span id="roleTag" style="color: var(--accent); font-size: 11px; font-weight:800; letter-spacing:3px;"></span>
+                </div>
+                <button class="btn btn-p" style="padding: 10px 20px; font-size: 11px;" onclick="location.reload()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </header>
+
+            <div class="grid">
+                <div id="student-attendance-box" class="glass-panel" style="display: flex; flex-direction: column; justify-content: center;">
+                    <h3>Daily Status</h3>
+                    <p style="font-size: 13px; opacity: 0.6; margin-bottom: 15px;">Confirm your presence for today's session.</p>
+                    <button class="btn btn-p" onclick="markAttendance()">
+                        <i class="fas fa-fingerprint"></i> Check-In Today
+                    </button>
+                </div>
+
+                <div id="admin-panel" class="glass-panel" style="display:none; border: 1px solid var(--accent);">
+                    <h3 style="color: var(--accent);">Admin Dashboard</h3>
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-p" style="background: rgba(255,255,255,0.05);" onclick="viewAttendanceReport()">
+                            <i class="fas fa-clipboard-user"></i> Logs
+                        </button>
+                        <button class="btn btn-p" onclick="viewProgressReport()">
+                            <i class="fas fa-chart-pie"></i> Analytics
+                        </button>
+                    </div>
+                    <div style="margin-top:20px; padding-top:15px; border-top: 1px dashed var(--border);">
+                        <input type="text" id="newCourseName" placeholder="New Course Name">
+                        <input type="text" id="newPdfUrl" placeholder="Direct PDF URL">
+                        <button class="btn btn-p" style="width:100%; margin-top: 5px;" onclick="addSubject()">
+                            <i class="fas fa-plus-circle"></i> Deploy Course
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin: 50px 0 20px; text-align: left; font-weight: 800;">Academic <span style="color: var(--accent);">Vault</span></h2>
+            <div id="course-grid" class="grid"></div>
+        </div>
+    </div>
+
+    <div id="video-modal" class="modal-overlay">
+        <div class="glass-panel" style="max-width: 900px; width:100%; border-color: var(--accent);">
+            <h3 id="vTitle" style="margin-bottom: 15px;"></h3>
+            <div id="video-container" style="box-shadow: 0 0 30px rgba(0,0,0,0.5);"></div>
+            <button class="btn btn-p" style="width:100%; margin-top:20px;" onclick="closeVideo()">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <div id="quiz-modal" class="modal-overlay">
+        <div class="glass-panel" style="max-width: 550px; width:100%; border-color: #10b981;">
+            <div style="display:flex; justify-content:space-between; align-items: center;">
+                <h3 id="qSub"></h3>
+                <div id="timer-display" style="background: rgba(16, 185, 129, 0.2); padding: 5px 15px; border-radius: 10px; color:#10b981; font-weight:bold;">30</div>
+            </div>
+            <p id="qText" style="margin:25px 0; font-size: 18px; line-height: 1.5;"></p>
+            <div id="qOptions"></div>
+        </div>
+    </div>
+
+    <script>
+        // UN OD original quizBank - EXACT same questions!
+        const quizBank = {
+            'python': [{q:"Who created Python?", o:["Guido van Rossum","Dennis Ritchie"], a:0}, {q:"Keyword for function?", o:["def","func"], a:0}, {q:"Output 2**3?", o:["8","6"], a:0}, {q:"Comment in Python?", o:["#","//"], a:0}, {q:"Extension?", o:[".py",".pt"], a:0}, {q:"List symbol?", o:["[]","{}"], a:0}, {q:"Boolean?", o:["True","true"], a:0}, {q:"Mutable?", o:["List","Tuple"], a:0}, {q:"Integer?", o:["int","str"], a:0}, {q:"Start block?", o:["Indentation","Braces"], a:0}],
+            'html': [{q:"HTML?", o:["Markup","Machine"], a:0}, {q:"Break tag?", o:["<br>","<hr>"], a:0}, {q:"Heading?", o:["h1","p"], a:0}, {q:"Link?", o:["a","link"], a:0}, {q:"Image?", o:["img","pic"], a:0}, {q:"Row?", o:["tr","td"], a:0}, {q:"Cell?", o:["td","tr"], a:0}, {q:"List?", o:["li","ul"], a:0}, {q:"Body?", o:["body","head"], a:0}, {q:"Input?", o:["input","tag"], a:0}],
+            'javascript': [{q:"Tag?", o:["script","js"], a:0}, {q:"Alert?", o:["alert()","msg()"], a:0}, {q:"Var?", o:["let","var"], a:0}, {q:"Strict?", o:["===","=="], a:0}, {q:"Func?", o:["function","def"], a:0}, {q:"JSON?", o:["Notation","Java"], a:0}, {q:"Comment?", o:["//","#"], a:0}, {q:"Array?", o:["[]","{}"], a:0}, {q:"Loop?", o:["for","each"], a:0}, {q:"Event?", o:["onclick","click"], a:0}],
+            'ml': [{q:"Supervised?", o:["Labeled","Unlabeled"], a:0}, {q:"K-Means?", o:["Cluster","Reg"], a:0}, {q:"Epoch?", o:["Pass","Row"], a:0}, {q:"Unit?", o:["Neuron","Logic"], a:0}, {q:"ReLU?", o:["Activ","Layer"], a:0}, {q:"Subset?", o:["ML","AI"], a:0}, {q:"Python?", o:["Yes","No"], a:0}, {q:"Deep?", o:["ML","AI"], a:0}, {q:"CNN?", o:["Conv","Linear"], a:0}, {q:"Variance?", o:["High","Low"], a:0}],
+            'cpp': [{q:"Creator?", o:["Bjarne","Dennis"], a:0}, {q:"Print?", o:["cout","printf"], a:0}, {q:"Header?", o:["iostream","stdio"], a:0}, {q:"Int?", o:["int","integer"], a:0}, {q:"OOP?", o:["Yes","No"], a:0}, {q:"Stmt?", o:[";","."], a:0}, {q:"Pointer?", o:["*","&"], a:0}, {q:"Class?", o:["class","obj"], a:0}, {q:"Main?", o:["int main","void"], a:0}, {q:"Comment?", o:["//","--"], a:0}],
+            'ds': [{q:"Stack?", o:["LIFO","FIFO"], a:0}, {q:"Queue?", o:["FIFO","LIFO"], a:0}, {q:"Array?", o:["Linear","Non"], a:0}, {q:"Search?", o:["O(log n)","O(n)"], a:0}, {q:"Node?", o:["Link","Array"], a:0}, {q:"Hierarchy?", o:["Tree","Stack"], a:0}, {q:"Root?", o:["Tree","Leaf"], a:0}, {q:"Recursion?", o:["Stack","Queue"], a:0}, {q:"Graph?", o:["Edges","Rows"], a:0}, {q:"Push?", o:["Stack","Queue"], a:0}]
+        };
+
+        // UN OD original subjects - EXACT same!
+        let subjects = JSON.parse(localStorage.getItem('trihub_v7_final')) || [
+            { id: 'python', name: 'Python Engineering', yt: 'rfscVS0vtbw', pdf: 'https://cfm.ehu.es/ricardo/docs/python/Learning_Python.pdf' },
+            { id: 'html', name: 'Web Architecture (HTML)', yt: 'ok-plXXHlWw', pdf: 'https://www.tutorialspoint.com/html/html_tutorial.pdf' },
+            { id: 'javascript', name: 'JavaScript Core', yt: 'W6NZfCO5SIk', pdf: 'https://www.tutorialspoint.com/javascript/javascript_tutorial.pdf' },
+            { id: 'ml', name: 'Neural Networks & ML', yt: 'GwIo3gDZCVQ', pdf: 'https://jcer.in/jcer-docs/E-Learning/Digital%20Library%20/E-Books/Artificial%20Intelligence.pdf' },
+            { id: 'cpp', name: 'C++ Systems', yt: 'vLnPwxZdW4Y', pdf: 'https://www.idpoisson.fr/volkov/C%2B%2B.pdf' },
+            { id: 'ds', name: 'Advanced Data Structures', yt: 'RBSGKlAvoic', pdf: 'https://www.mta.ca/~rrosebru/oldcourse/263114/Dsa.pdf' }
+        ];
+
+        let currentUser = ""; let currentRole = ""; let currentSub = "";
+        let qIdx = 0, score = 0, timer, timeLeft = 30;
+
+        function handleLogin() {
+            const name = document.getElementById('userName').value.trim();
+            const role = document.getElementById('userRole').value;
+            if(!name) return Swal.fire({ icon: 'error', title: 'Identity Required', text: 'Please enter your name to proceed.', background: '#0f172a', color: '#fff' });
+           
+            currentUser = name; currentRole = role;
+            document.getElementById('login-view').classList.remove('active');
+            document.getElementById('main-view').classList.add('active');
+            document.getElementById('greetMsg').innerText = `Welcome, ${currentUser}`;
+            document.getElementById('roleTag').innerText = currentRole.toUpperCase();
+           
+            if(role === 'teacher') {
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('student-attendance-box').style.display = 'none';
+            }
+            renderCourses();
+        }
+
+        function renderCourses() {
+            const grid = document.getElementById('course-grid');
+            grid.innerHTML = subjects.map(s => `
+                <div class="card">
+                    <span style="font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase;">Module</span>
+                    <h3 style="margin: 5px 0 20px 0; font-size: 1.4rem;">${s.name}</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <button class="btn btn-yt" onclick="openVideo('${s.yt}', '${s.name}')"><i class="fab fa-youtube"></i> Video</button>
+                        <button class="btn btn-pdf" onclick="window.open('${s.pdf}')"><i class="fas fa-file-pdf"></i> Docs</button>
+                    </div>
+                    <button class="btn btn-quiz" style="margin-top:12px;" onclick="startQuiz('${s.id}')"><i class="fas fa-bolt"></i> Assessment</button>
+                    ${currentRole === 'teacher' ? `<button class="btn" style="color:#ff4444; margin-top:10px; width:100%; background:transparent; border: 1px solid rgba(255,68,68,0.2)" onclick="deleteSubject('${s.id}')">Delete Module</button>` : ''}
+                </div>
+            `).join('');
+            localStorage.setItem('trihub_v7_final', JSON.stringify(subjects));
+        }
+
+        function markAttendance() {
+            let logs = JSON.parse(localStorage.getItem('trihub_attendance_final')) || [];
+            const today = new Date().toDateString();
+            if(logs.some(l => l.name === currentUser && l.date === today)) return Swal.fire({ icon: 'info', title: 'Already Logged', text: 'Your attendance is already recorded for today.', background: '#0f172a', color: '#fff' });
+           
+            logs.push({ name: currentUser, date: today, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('trihub_attendance_final', JSON.stringify(logs));
+            Swal.fire({ icon: 'success', title: 'Confirmed', text: 'Attendance logged successfully.', background: '#0f172a', color: '#fff' });
+        }
+
+        function viewAttendanceReport() {
+            let logs = JSON.parse(localStorage.getItem('trihub_attendance_final')) || [];
+            let html = '<table class="report-table"><thead><tr><th>Student</th><th>Date</th></tr></thead><tbody>';
+            logs.forEach(l => html += `<tr><td>${l.name}</td><td>${l.date}</td></tr>`);
+            Swal.fire({ title: 'System Attendance Logs', html: html + '</tbody></table>', width: '600px', background: '#0f172a', color: '#fff' });
+        }
+
+        function viewProgressReport() {
+            let progress = JSON.parse(localStorage.getItem('trihub_progress')) || [];
+            let html = '<div style="max-height:400px; overflow-y:auto;"><table class="report-table"><thead><tr><th>Student</th><th>Subject</th><th>Score</th></tr></thead><tbody>';
+            progress.forEach(p => html += `<tr><td>${p.name}</td><td>${p.subject}</td><td><b style="color:var(--accent)">${p.score}/10</b></td></tr>`);
+            Swal.fire({ title: 'Performance Analytics', html: html + '</tbody></table></div>', width: '700px', background: '#0f172a', color: '#fff' });
+        }
+
+        // Quiz logic - UN OD exact same!
+        let currentQSet = [];
+        function startQuiz(id) {
+            if(!quizBank[id]) return Swal.fire('Error', 'Quiz not found for this module', 'error');
+            currentSub = id; qIdx = 0; score = 0; currentQSet = quizBank[id];
+            document.getElementById('quiz-modal').style.display='flex';
+            document.getElementById('qSub').innerText=id.toUpperCase();
+            loadQ();
+        }
+
+        function loadQ() {
+            clearInterval(timer); timeLeft = 30; document.getElementById('timer-display').innerText = timeLeft;
+            const q = currentQSet[qIdx];
+            document.getElementById('qText').innerText = q.q;
+            document.getElementById('qOptions').innerHTML = q.o.map((opt, i) => `
+                <button class="btn btn-p" style="width:100%; margin: 8px 0; background: rgba(255,255,255,0.05); text-transform: none;" onclick="check(${i}, ${q.a})">${opt}</button>
+            `).join('');
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft;
+                if(timeLeft<=0) check(-1, 0);
+            }, 1000);
+        }
+
+        function check(s, a) {
+            clearInterval(timer); if(s===a) score++; qIdx++;
+            if(qIdx < currentQSet.length) loadQ();
+            else {
+                let progress = JSON.parse(localStorage.getItem('trihub_progress')) || [];
+                progress.push({ name: currentUser, subject: currentSub.toUpperCase(), score: score, date: new Date().toLocaleDateString() });
+                localStorage.setItem('trihub_progress', JSON.stringify(progress));
+               
+                Swal.fire({ icon: 'success', title: 'Quiz Complete', text: `You scored ${score}/10`, background: '#0f172a', color: '#fff' });
+                document.getElementById('quiz-modal').style.display='none';
+            }
+        }
+
+        function addSubject() {
+            const name = document.getElementById('newCourseName').value;
+            const pdf = document.getElementById('newPdfUrl').value;
+            if(!name) return;
+            subjects.push({ id: name.toLowerCase().replace(/\s/g, ''), name: name, yt: 'dQw4w9WgXcQ', pdf: pdf || '#' });
+            renderCourses();
+            document.getElementById('newCourseName').value = ''; document.getElementById('newPdfUrl').value = '';
+        }
+       
+        function deleteSubject(id) { subjects = subjects.filter(s => s.id !== id); renderCourses(); }
+       
+        function openVideo(id, t) {
+            document.getElementById('video-modal').style.display='flex';
+            document.getElementById('vTitle').innerText=t;
+            document.getElementById('video-container').innerHTML=`<iframe width="100%" height="450" src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allowfullscreen style="border-radius:20px;"></iframe>`;
+        }
+       
+        function closeVideo() {
+            document.getElementById('video-modal').style.display='none';
+            document.getElementById('video-container').innerHTML='';
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if(e.target === this) {
+                    this.style.display = 'none';
+                    document.getElementById('video-container').innerHTML = '';
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userName').focus();
+        });
+    </script>
+</body>
+</html>
